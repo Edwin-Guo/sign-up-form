@@ -1,9 +1,11 @@
 import { Text, View, StyleSheet } from "react-native";
+import SignupForm from "../../components/SignupForm";
+
 
 export default function Index() {
   return (
     <View style={styles.container}>
-      <Text>Edit src/app/index.tsx to edit this screen.</Text>
+      <SignupForm />
     </View>
   );
 }
