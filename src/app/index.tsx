@@ -1,6 +1,5 @@
-import { Text, View, StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import SignupForm from "../../components/SignupForm";
-
 
 export default function Index() {
   return (

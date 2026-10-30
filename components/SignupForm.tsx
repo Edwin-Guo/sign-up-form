@@ -16,26 +16,28 @@ const signupSchema = z
   .object({
     firstName: z
       .string()
+      .trim()
       .min(2, "Must be at least 2 characters long.")
       .max(30, "Please shorten to under 30 characters."),
     lastName: z
       .string()
+      .trim()
       .min(2, "Must be at least 2 characters long.")
       .max(30, "Please shorten to under 30 characters."),
     email: z.email("Please enter a valid email.").trim(),
     password: z.string().min(8, "Password must be at least 8 characters long."),
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(1, "Password confirmation required."),
   })
   .refine((data) => data.password === data.confirmPassword, {
     error: "Passwords don't match.",
     path: ["confirmPassword"],
   });
 
-type signupForm = z.infer<typeof signupSchema>;
+type SignupData = z.infer<typeof signupSchema>;
 
 type FieldProps = {
-  control: Control<signupForm>;
-  name: FieldPath<signupForm>;
+  control: Control<SignupData>;
+  name: FieldPath<SignupData>;
   secure?: boolean;
   email?: boolean;
 };
@@ -66,7 +68,7 @@ function Field({ control, name, secure, email }: FieldProps) {
 }
 
 const SignupForm = () => {
-  const { control, handleSubmit } = useForm<signupForm>({
+  const { control, handleSubmit } = useForm<SignupData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
       firstName: "",
@@ -78,14 +80,13 @@ const SignupForm = () => {
     mode: "onSubmit",
   });
 
-  const onSubmit = (data: signupForm) => {
+  const onSubmit = (data: SignupData) => {
     console.log(data.firstName + ", " + data.lastName + ": " + data.email);
     router.navigate({
       pathname: "/confirmation",
       params: { name: data.firstName },
     });
   };
-
   return (
     <SafeAreaView>
       <ScrollView>
