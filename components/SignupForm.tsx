@@ -1,26 +1,35 @@
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm, Control, FieldPath } from "react-hook-form";
-import { TextInput, View, Text, Pressable, StyleSheet } from "react-native";
+import { router } from "expo-router";
+import { Control, Controller, FieldPath, useForm } from "react-hook-form";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { z } from "zod";
 
-const signupSchema = z.object(
-  {
-    firstName: z.string()
-      .min(2, "First name is required and must be at least 2 characters long")
-      .max(30, "First name is too long, please shorten to under 30 characters"),
-    lastName: z.string()
-      .min(2, "Last name is required and must be at least 2 character long")
-      .max(30, "Last name too long, please shorten to under 30 characters."),
-    email: z.email("Please enter a valid email")
-      .trim(),
-    password: z.string()
-      .min(8, "Password must be at least 8 characters long"),
+const signupSchema = z
+  .object({
+    firstName: z
+      .string()
+      .min(2, "Must be at least 2 characters long.")
+      .max(30, "Please shorten to under 30 characters."),
+    lastName: z
+      .string()
+      .min(2, "Must be at least 2 characters long.")
+      .max(30, "Please shorten to under 30 characters."),
+    email: z.email("Please enter a valid email.").trim(),
+    password: z.string().min(8, "Password must be at least 8 characters long."),
     confirmPassword: z.string(),
-  }
-).refine((data) => data.password === data.confirmPassword, {
-  error: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    error: "Passwords don't match.",
+    path: ["confirmPassword"],
+  });
 
 type signupForm = z.infer<typeof signupSchema>;
 
@@ -29,20 +38,19 @@ type FieldProps = {
   name: FieldPath<signupForm>;
   secure?: boolean;
   email?: boolean;
-}
+};
 
-function Field({control, name, secure, email} : FieldProps) {
+function Field({ control, name, secure, email }: FieldProps) {
   return (
-    <Controller 
-      control = {control}  
+    <Controller
+      control={control}
       name={name}
       render={({
-        field: {onChange, onBlur, value},
+        field: { onChange, onBlur, value },
         fieldState: { error },
-
       }) => (
         <View>
-          <TextInput 
+          <TextInput
             style={styles.fieldBox}
             secureTextEntry={secure}
             keyboardType={email ? "email-address" : "default"}
@@ -54,76 +62,81 @@ function Field({control, name, secure, email} : FieldProps) {
         </View>
       )}
     />
-  )
+  );
 }
 
 const SignupForm = () => {
-  const {
-    control, 
-    handleSubmit,
-    formState: {errors},
-  } = useForm<signupForm>({
+  const { control, handleSubmit } = useForm<signupForm>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      firstName:"",
-      lastName:"",
-      email:"",
-      password:"",
-      confirmPassword:"",
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
     mode: "onSubmit",
   });
 
-  const onSubmit = (data:signupForm) => {
-    console.log(data);
-  }
+  const onSubmit = (data: signupForm) => {
+    console.log(data.firstName + ", " + data.lastName + ": " + data.email);
+    router.navigate({
+      pathname: "/confirmation",
+      params: { name: data.firstName },
+    });
+  };
 
   return (
-    <View>
-      <Text style={styles.title}>First Name</Text>
-      <Field control={control} name="firstName" />
+    <SafeAreaView>
+      <ScrollView>
+        <Text style={styles.title}>First Name</Text>
+        <Field control={control} name="firstName" />
 
-      <Text style={styles.title}>Last Name</Text>
-      <Field control={control} name="lastName" />
+        <Text style={styles.title}>Last Name</Text>
+        <Field control={control} name="lastName" />
 
-      <Text style={styles.title}>Email</Text>
-      <Field control={control} name="email" email />
+        <Text style={styles.title}>Email</Text>
+        <Field control={control} name="email" email />
 
-      <Text style={styles.title}>Password</Text>
-      <Field control={control} name="password" secure/>
+        <Text style={styles.title}>Password</Text>
+        <Field control={control} name="password" secure />
 
-      <Text style={styles.title}>Confirm Password</Text>
-      <Field control={control} name="confirmPassword" secure />
+        <Text style={styles.title}>Confirm Password</Text>
+        <Field control={control} name="confirmPassword" secure />
 
-      <Pressable style ={styles.button} onPress={handleSubmit(onSubmit)}>
-        <Text style={[{color: "#ffffff"}]}>Sign Up</Text>
-      </Pressable>
-    </View>
+        <Pressable style={styles.button} onPress={handleSubmit(onSubmit)}>
+          <Text style={[{ color: "#ffffff" }]}>Sign Up</Text>
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   title: {
     fontSize: 20,
-    marginLeft:10,
   },
   fieldBox: {
-    borderRadius:20,
-    paddingHorizontal: 30,
+    borderRadius: 20,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: "#ffffff",
+    width: 300,
+    height: 40,
   },
   error: {
-    color:"#ff0000",
-    fontWeight:"bold",
-    marginLeft:10,
+    color: "#ff0000",
+    fontWeight: "bold",
   },
   button: {
     backgroundColor: "#006fbf",
     borderRadius: 20,
-    padding:10,
-  }
+    padding: 10,
+    marginVertical: 10,
+    alignItems: "center",
+    width: 300,
+    height: 40,
+  },
 });
 
 export default SignupForm;
-
